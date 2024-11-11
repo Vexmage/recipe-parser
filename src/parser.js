@@ -4,11 +4,28 @@ function parseRecipe(recipeText) {
     const lines = recipeText.split('\n');
     const ingredients = [];
     const instructions = [];
+    let prepTime = null;
+    let cookTime = null;
+    let servings = null;
 
     let parsingInstructions = false;
 
     lines.forEach(line => {
         line = line.trim();
+
+        // Check for metadata lines before parsing ingredients and instructions
+        if (line.toLowerCase().startsWith('prep time:')) {
+            prepTime = line.split(':')[1].trim();
+            return;
+        }
+        if (line.toLowerCase().startsWith('cook time:')) {
+            cookTime = line.split(':')[1].trim();
+            return;
+        }
+        if (line.toLowerCase().startsWith('servings:')) {
+            servings = line.split(':')[1].trim();
+            return;
+        }
 
         // Check if we've reached the instructions section
         if (line.toLowerCase() === 'instructions:') {
@@ -25,15 +42,16 @@ function parseRecipe(recipeText) {
             if (match) {
                 const [, quantity, unit, ingredient] = match;
                 ingredients.push({
-                    quantity: quantity || null,
+                    quantity: quantity ? quantity.trim() : null,   
                     unit: unit || null,
                     ingredient: ingredient.trim()
                 });
+                
             }
         }
     });
 
-    return { ingredients, instructions };
+    return { prepTime, cookTime, servings, ingredients, instructions };
 }
 
 module.exports = { parseRecipe };

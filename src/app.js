@@ -14,6 +14,11 @@ app.get('/', (req, res) => {
 app.post('/parse', (req, res) => {
     const { recipe } = req.body;
     const parsedRecipe = parseRecipe(recipe);
+    
+    if (parsedRecipe.error) {
+        return res.status(400).json({ error: parsedRecipe.error });
+    }
+    
     res.json(parsedRecipe);
 });
 

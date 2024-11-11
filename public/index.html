@@ -15,18 +15,29 @@
 <script>
     async function parseRecipe() {
         const recipeText = document.getElementById('recipeInput').value;
-        const response = await fetch('/parse', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ recipe: recipeText })
-        });
         
-        const result = await response.json();
-        document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+        try {
+            const response = await fetch('/parse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ recipe: recipeText })
+            });
+            
+            const result = await response.json();
+            
+            if (!response.ok) {
+                document.getElementById('output').textContent = `Error: ${result.error}`;
+            } else {
+                document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+            }
+        } catch (error) {
+            document.getElementById('output').textContent = `Error: ${error.message}`;
+        }
     }
 </script>
+
 
 
 </body>

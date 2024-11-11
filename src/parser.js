@@ -9,11 +9,12 @@ function parseRecipe(recipeText) {
     let servings = null;
 
     let parsingInstructions = false;
+    let hasIngredients = false;
 
     lines.forEach(line => {
         line = line.trim();
 
-        // Check for metadata lines before parsing ingredients and instructions
+        // Check for metadata lines
         if (line.toLowerCase().startsWith('prep time:')) {
             prepTime = line.split(':')[1].trim();
             return;
@@ -40,16 +41,24 @@ function parseRecipe(recipeText) {
             // Parse as ingredient line if not in instructions section
             const match = line.match(/^(?:(\d+\s*\d*\/?\d*)\s*)?(?:([a-zA-Z]+)\s+)?(.+)$/);
             if (match) {
+                hasIngredients = true;
                 const [, quantity, unit, ingredient] = match;
                 ingredients.push({
-                    quantity: quantity ? quantity.trim() : null,   
+                    quantity: quantity ? quantity.trim() : null,
                     unit: unit || null,
                     ingredient: ingredient.trim()
                 });
-                
             }
         }
     });
+
+    // Basic validation checks
+    if (!hasIngredients) {
+        return { error: "No ingredients found. Please add at least one ingredient." };
+    }
+    if (instructions.length === 0) {
+        return { error: "No instructions found. Please add instructions after 'Instructions:'." };
+    }
 
     return { prepTime, cookTime, servings, ingredients, instructions };
 }

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Parser</title>
+</head>
+<body>
+    <h1>Recipe Parser</h1>
+    <textarea id="recipeInput" rows="10" cols="30" placeholder="Enter recipe here..."></textarea>
+    <br>
+    <button onclick="parseRecipe()">Parse Recipe</button>
+    <pre id="output"></pre>
+
+<script>
+    async function parseRecipe() {
+        const recipeText = document.getElementById('recipeInput').value;
+        const response = await fetch('/parse', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ recipe: recipeText })
+        });
+        
+        const result = await response.json();
+        document.getElementById('output').textContent = JSON.stringify(result, null, 2);
+    }
+</script>
+
+</body>
+</html>

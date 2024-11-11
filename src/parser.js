@@ -1,22 +1,39 @@
 // src/parser.js
 
-function parseIngredients(recipeText) {
+function parseRecipe(recipeText) {
     const lines = recipeText.split('\n');
-    const ingredients = lines.map(line => {
-        // Updated regular expression to capture optional quantity and unit
-        const match = line.match(/^(?:(\d+\s*\d*\/?\d*)\s*)?(?:([a-zA-Z]+)\s+)?(.+)$/);
-        
-        if (match) {
-            const [, quantity, unit, ingredient] = match;
-            return {
-                quantity: quantity || null,    // If no quantity is found, set to null
-                unit: unit || null,            // If no unit is found, set to null
-                ingredient: ingredient.trim()   // Ingredient name, trimmed of extra spaces
-            };
+    const ingredients = [];
+    const instructions = [];
+
+    let parsingInstructions = false;
+
+    lines.forEach(line => {
+        line = line.trim();
+
+        // Check if we've reached the instructions section
+        if (line.toLowerCase() === 'instructions:') {
+            parsingInstructions = true;
+            return;
         }
-        return null;
-    }).filter(Boolean); // Filters out any lines that didn't match
-    return ingredients;
+
+        if (parsingInstructions) {
+            // Treat each line as a separate instruction if we're in the instructions section
+            if (line) instructions.push(line);
+        } else {
+            // Parse as ingredient line if not in instructions section
+            const match = line.match(/^(?:(\d+\s*\d*\/?\d*)\s*)?(?:([a-zA-Z]+)\s+)?(.+)$/);
+            if (match) {
+                const [, quantity, unit, ingredient] = match;
+                ingredients.push({
+                    quantity: quantity || null,
+                    unit: unit || null,
+                    ingredient: ingredient.trim()
+                });
+            }
+        }
+    });
+
+    return { ingredients, instructions };
 }
 
-module.exports = { parseIngredients };
+module.exports = { parseRecipe };

@@ -9,12 +9,16 @@ class RecipeNode {
 }
 
 class IngredientNode {
-    constructor(quantity, unit, ingredient) {
+    constructor(quantity, unit, ingredient, descriptor = null, optional = false) {
         this.quantity = quantity || null;
         this.unit = unit || null;
         this.ingredient = ingredient || null;
+        this.descriptor = descriptor;
+        this.optional = optional;
     }
 }
+
+
 
 class InstructionNode {
     constructor(step) {
@@ -63,14 +67,20 @@ function parseRecipe(recipeText) {
                 recipeNode.instructions.push(new InstructionNode(line));
             }
         } else {
-            // Ingredient parsing
-            const match = line.match(/^(?:(\d+\s*\d*\/?\d*)\s*)?(?:([a-zA-Z]+)\s+)?(.+)$/);
+            // Step 1: Manually separate descriptor after the comma
+            const [mainPart, descriptor] = line.split(/,\s*(.+)/); // Splits on first comma, capturing the rest as descriptor
+
+            // Step 2: Parse quantity, unit, and ingredient from main part
+            const match = mainPart.match(/^(\d+\s*\d*\/?\d*)?\s*([a-zA-Z]+)?\s+(.+)$/);
             if (match) {
                 const [, quantity, unit, ingredient] = match;
+
                 recipeNode.ingredients.push(new IngredientNode(
                     quantity ? quantity.trim() : null,
                     unit || null,
-                    ingredient.trim()
+                    ingredient.trim(),
+                    descriptor || null,  // Now this should capture text after the comma
+                    false  // Default optional to false for now
                 ));
             }
         }
@@ -78,6 +88,11 @@ function parseRecipe(recipeText) {
 
     return recipeNode;
 }
+
+
+
+
+
 
 function parseTreeToJson(recipeNode) {
     return {

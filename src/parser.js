@@ -67,16 +67,16 @@ function parseRecipe(recipeText) {
                 recipeNode.instructions.push(new InstructionNode(line));
             }
         } else {
-            // Check if the line contains "optional" at the end and mark the ingredient as optional
+            // Step 1: Check if the line contains "optional" at the end and mark it
             const isOptional = /optional$/i.test(line);
             if (isOptional) {
                 line = line.replace(/,\s*optional$/i, '').trim();  // Remove "optional" from the line
             }
 
-            // Separate descriptor after the comma
-            const [mainPart, descriptor] = line.split(/,\s*(.+)/);
-
-            // Parse quantity, unit, and ingredient from main part, accounting for "of"
+            // Step 2: Check for descriptors and separate them
+            const [mainPart, descriptor] = line.split(/,\s*(.+)/); // Splits on first comma, capturing the rest as descriptor
+            
+            // Step 3: Parse quantity, unit, and ingredient from main part
             const match = mainPart.match(/^(\d+\s*\d*\/?\d*)?\s*([a-zA-Z]+)?\s*(?:of\s+)?(.+)$/);
             if (match) {
                 const [, quantity, unit, ingredient] = match;
@@ -85,7 +85,7 @@ function parseRecipe(recipeText) {
                     quantity ? quantity.trim() : null,
                     unit || null,
                     ingredient.trim(),
-                    descriptor || null,
+                    descriptor || null,  // Assign descriptor if found
                     isOptional
                 ));
             }

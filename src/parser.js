@@ -102,12 +102,12 @@ function parseTreeToJson(recipeNode) {
         ingredients: recipeNode.ingredients.map(ingredient => ({
             quantity: ingredient.quantity,
             unit: ingredient.unit,
-            ingredient: ingredient.ingredient
+            ingredient: ingredient.ingredient,
+            descriptor: ingredient.descriptor
         })),
         instructions: recipeNode.instructions.map(instruction => instruction.step)
     };
 }
-
 
 module.exports = { parseRecipe, parseTreeToJson, RecipeNode, IngredientNode, InstructionNode, MetadataNode };
 

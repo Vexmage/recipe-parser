@@ -67,11 +67,17 @@ function parseRecipe(recipeText) {
                 recipeNode.instructions.push(new InstructionNode(line));
             }
         } else {
-            // Step 1: Manually separate descriptor after the comma
-            const [mainPart, descriptor] = line.split(/,\s*(.+)/); // Splits on first comma, capturing the rest as descriptor
+            // Check if the line contains "optional" at the end and mark the ingredient as optional
+            const isOptional = /optional$/i.test(line);
+            if (isOptional) {
+                line = line.replace(/,\s*optional$/i, '').trim();  // Remove "optional" from the line
+            }
 
-            // Step 2: Parse quantity, unit, and ingredient from main part
-            const match = mainPart.match(/^(\d+\s*\d*\/?\d*)?\s*([a-zA-Z]+)?\s+(.+)$/);
+            // Separate descriptor after the comma
+            const [mainPart, descriptor] = line.split(/,\s*(.+)/);
+
+            // Parse quantity, unit, and ingredient from main part, accounting for "of"
+            const match = mainPart.match(/^(\d+\s*\d*\/?\d*)?\s*([a-zA-Z]+)?\s*(?:of\s+)?(.+)$/);
             if (match) {
                 const [, quantity, unit, ingredient] = match;
 
@@ -79,8 +85,8 @@ function parseRecipe(recipeText) {
                     quantity ? quantity.trim() : null,
                     unit || null,
                     ingredient.trim(),
-                    descriptor || null,  // Now this should capture text after the comma
-                    false  // Default optional to false for now
+                    descriptor || null,
+                    isOptional
                 ));
             }
         }
@@ -88,8 +94,6 @@ function parseRecipe(recipeText) {
 
     return recipeNode;
 }
-
-
 
 
 
@@ -103,11 +107,13 @@ function parseTreeToJson(recipeNode) {
             quantity: ingredient.quantity,
             unit: ingredient.unit,
             ingredient: ingredient.ingredient,
-            descriptor: ingredient.descriptor
+            descriptor: ingredient.descriptor,
+            optional: ingredient.optional  // Explicitly include the optional flag
         })),
         instructions: recipeNode.instructions.map(instruction => instruction.step)
     };
 }
+
 
 module.exports = { parseRecipe, parseTreeToJson, RecipeNode, IngredientNode, InstructionNode, MetadataNode };
 

@@ -36,6 +36,12 @@ app.get('/', (req, res) => {
   });
 
 
+// Serve test.html for testing the modal at /test
+app.get('/test', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/test.html'));
+});
+
+
 // Sync database models and start the server
 db.sequelize
   .sync()

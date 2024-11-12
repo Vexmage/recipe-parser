@@ -44,28 +44,36 @@
             <h2>Parse Your Recipe</h2>
             <textarea id="recipeInput" class="form-control mb-3" rows="8" placeholder="Enter recipe here..."></textarea>
             <button onclick="parseRecipe()" class="btn btn-primary">Parse Recipe</button>
-            <button class="btn btn-secondary mt-2" onclick="showSaveModal()">Save Recipe</button>
+            <button class="btn btn-success" onclick="showSaveModal()">Save Recipe</button>
+            <button class="btn btn-info" onclick="exportJSON()">Export JSON</button>
             <pre id="output" class="border p-3 bg-light mt-3" style="max-height: 300px; overflow-y: auto;"></pre>
         </div>
 
-        <!-- Save Recipe Modal -->
-        <div class="modal fade" id="saveRecipeModal" tabindex="-1" aria-labelledby="saveRecipeModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="saveRecipeModalLabel">Save Recipe</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <input type="text" id="recipeName" class="form-control" placeholder="Enter recipe name" />
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" class="btn btn-primary" onclick="saveRecipe()">Save</button>
-                    </div>
-                </div>
+
+<!-- Save Recipe Modal -->
+<div class="modal fade" id="saveRecipeModal" tabindex="-1" aria-labelledby="saveRecipeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="saveRecipeModalLabel">Save Recipe</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <label for="recipeName" class="form-label">Recipe Name</label>
+                <input type="text" id="recipeName" class="form-control" placeholder="Enter recipe name" required />
+                <small id="nameError" class="text-danger d-none mt-2">Please enter a recipe name.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveRecipe()">Save</button>
             </div>
         </div>
+    </div>
+</div>
+
+
 
 
         <!-- Login Section -->
@@ -134,30 +142,59 @@
             $('#saveRecipeModal').modal('show');
         }
 
-        async function saveRecipe() {
-            const recipeName = document.getElementById('recipeName').value;
-            const parsedRecipe = JSON.parse(document.getElementById('output').textContent);
+async function saveRecipe() {
+    const recipeNameInput = document.getElementById('recipeName');
+    const recipeName = recipeNameInput.value.trim();
+    const parsedRecipe = JSON.parse(document.getElementById('output').textContent);
 
-            if (recipeName && parsedRecipe) {
-                try {
-                    const response = await fetch('/recipes/save', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: recipeName, recipe: parsedRecipe })
-                    });
-                    const result = await response.json();
-                    if (result.success) {
-                        alert('Recipe saved successfully!');
-                    } else {
-                        alert('Error saving recipe.');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('Failed to save recipe.');
-                }
+    // Check if the recipe name is provided
+    if (!recipeName) {
+        document.getElementById('nameError').classList.remove('d-none');
+        recipeNameInput.focus();
+        return;
+    } else {
+        document.getElementById('nameError').classList.add('d-none');
+    }
+
+    if (parsedRecipe) {
+        try {
+            const response = await fetch('/recipes/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: recipeName, recipe: parsedRecipe })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Recipe saved successfully!');
+            } else {
+                alert('Error saving recipe.');
             }
-            $('#saveRecipeModal').modal('hide');
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to save recipe.');
         }
+    }
+    // Hide modal on successful save
+    $('#saveRecipeModal').modal('hide');
+}
+
+
+function exportJSON() {
+    const parsedRecipe = document.getElementById('output').textContent;
+
+    if (!parsedRecipe) {
+        alert('No recipe data to export. Please parse a recipe first.');
+        return;
+    }
+
+    const blob = new Blob([parsedRecipe], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'recipe.json';
+    link.click();
+    URL.revokeObjectURL(url);  // Clean up the URL after download
+}
 
 
 

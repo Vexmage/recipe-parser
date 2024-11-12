@@ -1,10 +1,17 @@
-Recipe Parser
+# Recipe Parser
 
-This Recipe Parser is a web application that extracts structured information from recipe text input. Using a combination of regular expressions and parse trees, it identifies ingredients, quantities, cooking times, servings, and instructions, transforming unstructured recipes into JSON format. This project demonstrates parsing techniques, frontend UI with Bootstrap, and asynchronous client-server communication with Node.js and Express.
-Features:
+The Recipe Parser is a web application that converts unstructured recipe text into structured JSON format. By identifying key elements such as ingredients, quantities, cooking times, servings, and instructions, this app turns recipes into a data-friendly format, demonstrating parsing techniques, frontend design with Bootstrap, and asynchronous client-server interactions using Node.js and Express.
+
+## Features
 
     Ingredient Parsing: Extracts quantities, units, and descriptors (like "sifted" or "chopped") from each ingredient.
     Metadata Extraction: Captures prep time, cook time, and servings if available.
-    Instructions Parsing: Breaks down recipe steps into an organized list.
-    Frontend with Bootstrap: User-friendly interface for entering recipes and viewing parsed output.
-    API Endpoint: A RESTful /parse endpoint to process and parse recipe data.
+    Instructions Parsing: Breaks down recipe steps into a structured list for easy interpretation.
+    Frontend with Bootstrap: A clean, responsive interface for inputting recipes and viewing parsed output.
+    API Endpoint: A RESTful /parse endpoint that processes and parses recipe data from the frontend.
+
+## Technologies Used
+
+    Node.js and Express for the backend API
+    Bootstrap for a polished, responsive frontend UI
+    JavaScript for parsing logic, utilizing regular expressions and parse trees

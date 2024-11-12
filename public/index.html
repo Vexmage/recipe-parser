@@ -44,8 +44,29 @@
             <h2>Parse Your Recipe</h2>
             <textarea id="recipeInput" class="form-control mb-3" rows="8" placeholder="Enter recipe here..."></textarea>
             <button onclick="parseRecipe()" class="btn btn-primary">Parse Recipe</button>
+            <button class="btn btn-secondary mt-2" onclick="showSaveModal()">Save Recipe</button>
             <pre id="output" class="border p-3 bg-light mt-3" style="max-height: 300px; overflow-y: auto;"></pre>
         </div>
+
+        <!-- Save Recipe Modal -->
+        <div class="modal fade" id="saveRecipeModal" tabindex="-1" aria-labelledby="saveRecipeModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="saveRecipeModalLabel">Save Recipe</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="recipeName" class="form-control" placeholder="Enter recipe name" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="saveRecipe()">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
         <!-- Login Section -->
         <div id="loginSection" class="d-none">
@@ -109,26 +130,62 @@
             document.querySelectorAll('#mainContent > div').forEach(section => section.classList.add('d-none'));
         }
 
+        function showSaveModal() {
+            $('#saveRecipeModal').modal('show');
+        }
+
+        async function saveRecipe() {
+            const recipeName = document.getElementById('recipeName').value;
+            const parsedRecipe = JSON.parse(document.getElementById('output').textContent);
+
+            if (recipeName && parsedRecipe) {
+                try {
+                    const response = await fetch('/recipes/save', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name: recipeName, recipe: parsedRecipe })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        alert('Recipe saved successfully!');
+                    } else {
+                        alert('Error saving recipe.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('Failed to save recipe.');
+                }
+            }
+            $('#saveRecipeModal').modal('hide');
+        }
+
+
+
         // Parse Recipe Function
         async function parseRecipe() {
             const recipeText = document.getElementById('recipeInput').value;
 
             try {
-                const response = await fetch('/api/recipes/parse', { // Updated to include /api prefix
+                const response = await fetch('/api/recipes/parse', { // Confirm this endpoint is correct
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ recipe: recipeText })
                 });
                 const result = await response.json();
+                
+                console.log("Parsed JSON:", result); // Add this line for debugging
+
                 if (!response.ok) {
                     document.getElementById('output').textContent = `Error: ${result.error}`;
                 } else {
                     document.getElementById('output').textContent = JSON.stringify(result, null, 2);
                 }
             } catch (error) {
+                console.error('Parsing error:', error);
                 document.getElementById('output').textContent = `Error: ${error.message}`;
             }
         }
+
 
         // Placeholder functions for login, signup, logout
         async function login(event) {

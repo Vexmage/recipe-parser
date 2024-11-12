@@ -67,25 +67,35 @@ function parseRecipe(recipeText) {
                 recipeNode.instructions.push(new InstructionNode(line));
             }
         } else {
-            // Step 1: Check if the line contains "optional" at the end and mark it
+            // Check if the line contains "optional" at the end and mark it
             const isOptional = /optional$/i.test(line);
             if (isOptional) {
-                line = line.replace(/,\s*optional$/i, '').trim();  // Remove "optional" from the line
+                line = line.replace(/,\s*optional$/i, '').trim();
             }
 
-            // Step 2: Check for descriptors and separate them
-            const [mainPart, descriptor] = line.split(/,\s*(.+)/); // Splits on first comma, capturing the rest as descriptor
+            // Separate out the descriptor after a comma or before the main ingredient
+            const [mainPart, descriptor] = line.split(/,\s*(.+)/); // Capture text after a comma as a descriptor if it exists
             
-            // Step 3: Parse quantity, unit, and ingredient from main part
+            // Parse quantity, unit, and ingredient
             const match = mainPart.match(/^(\d+\s*\d*\/?\d*)?\s*([a-zA-Z]+)?\s*(?:of\s+)?(.+)$/);
             if (match) {
-                const [, quantity, unit, ingredient] = match;
+                const [, quantity, unit, ingredientText] = match;
+
+                // Check if any part of the ingredientText could be a descriptor
+                const ingredientMatch = ingredientText.match(/(melted|sifted|chopped|diced|fresh|dried)?\s*(.+)/i);
+                let ingredient = ingredientText;
+                let finalDescriptor = descriptor || null;
+
+                if (ingredientMatch) {
+                    finalDescriptor = finalDescriptor || ingredientMatch[1] || null; // Capture descriptor from regex match or existing descriptor
+                    ingredient = ingredientMatch[2].trim();
+                }
 
                 recipeNode.ingredients.push(new IngredientNode(
                     quantity ? quantity.trim() : null,
                     unit || null,
                     ingredient.trim(),
-                    descriptor || null,  // Assign descriptor if found
+                    finalDescriptor,
                     isOptional
                 ));
             }
@@ -94,6 +104,7 @@ function parseRecipe(recipeText) {
 
     return recipeNode;
 }
+
 
 
 

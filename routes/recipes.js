@@ -27,25 +27,25 @@ router.post('/parse', async (req, res) => {
 
 // Route to save a recipe
 router.post('/save', ensureAuthenticated, async (req, res) => {
-  try {
-    const { name, recipe } = req.body;
-    const userId = req.user.id; // Assuming user information is in req.user after authentication
+    try {
+        const { name, recipe } = req.body;
+        const userId = req.user.id;
 
-    await Recipe.create({
-      title: name,
-      ingredients: recipe.ingredients,
-      instructions: recipe.instructions,
-      prepTime: recipe.prepTime,
-      cookTime: recipe.cookTime,
-      servings: recipe.servings,
-      UserId: userId
-    });
+        await Recipe.create({
+            title: name,
+            ingredients: recipe.ingredients,
+            instructions: recipe.instructions,
+            prepTime: recipe.prepTime,
+            cookTime: recipe.cookTime,
+            servings: recipe.servings,
+            UserId: userId
+        });
 
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error saving recipe:', error);
-    res.json({ success: false });
-  }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error saving recipe:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
 });
 
 // Route to get saved recipes

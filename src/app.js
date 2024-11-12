@@ -26,6 +26,8 @@ app.use(passport.session());
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '../public')));
 
+app.use('/recipes', require('../routes/recipes'));
+
 
 // Use main router for API routes
 app.use('/api', routes); // Prefix API routes with /api to differentiate from frontend routes

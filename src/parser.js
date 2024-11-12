@@ -1,66 +1,98 @@
 // src/parser.js
 
+class RecipeNode {
+    constructor() {
+        this.metadata = {};      // Holds MetadataNodes
+        this.ingredients = [];    // Holds IngredientNodes
+        this.instructions = [];   // Holds InstructionNodes
+    }
+}
+
+class IngredientNode {
+    constructor(quantity, unit, ingredient) {
+        this.quantity = quantity || null;
+        this.unit = unit || null;
+        this.ingredient = ingredient || null;
+    }
+}
+
+class InstructionNode {
+    constructor(step) {
+        this.step = step;
+    }
+}
+
+class MetadataNode {
+    constructor(type, value) {
+        this.type = type; // "prepTime", "cookTime", or "servings"
+        this.value = value;
+    }
+}
+
 function parseRecipe(recipeText) {
+    const recipeNode = new RecipeNode();
     const lines = recipeText.split('\n');
-    const ingredients = [];
-    const instructions = [];
-    let prepTime = null;
-    let cookTime = null;
-    let servings = null;
 
     let parsingInstructions = false;
-    let hasIngredients = false;
 
     lines.forEach(line => {
         line = line.trim();
 
-        // Check for metadata lines
+        // Metadata parsing
         if (line.toLowerCase().startsWith('prep time:')) {
-            prepTime = line.split(':')[1].trim();
+            recipeNode.metadata.prepTime = new MetadataNode('prepTime', line.split(':')[1].trim());
             return;
         }
         if (line.toLowerCase().startsWith('cook time:')) {
-            cookTime = line.split(':')[1].trim();
+            recipeNode.metadata.cookTime = new MetadataNode('cookTime', line.split(':')[1].trim());
             return;
         }
         if (line.toLowerCase().startsWith('servings:')) {
-            servings = line.split(':')[1].trim();
+            recipeNode.metadata.servings = new MetadataNode('servings', line.split(':')[1].trim());
             return;
         }
 
-        // Check if we've reached the instructions section
+        // Instructions section
         if (line.toLowerCase() === 'instructions:') {
             parsingInstructions = true;
             return;
         }
 
         if (parsingInstructions) {
-            // Treat each line as a separate instruction if we're in the instructions section
-            if (line) instructions.push(line);
+            if (line) {
+                recipeNode.instructions.push(new InstructionNode(line));
+            }
         } else {
-            // Parse as ingredient line if not in instructions section
+            // Ingredient parsing
             const match = line.match(/^(?:(\d+\s*\d*\/?\d*)\s*)?(?:([a-zA-Z]+)\s+)?(.+)$/);
             if (match) {
-                hasIngredients = true;
                 const [, quantity, unit, ingredient] = match;
-                ingredients.push({
-                    quantity: quantity ? quantity.trim() : null,
-                    unit: unit || null,
-                    ingredient: ingredient.trim()
-                });
+                recipeNode.ingredients.push(new IngredientNode(
+                    quantity ? quantity.trim() : null,
+                    unit || null,
+                    ingredient.trim()
+                ));
             }
         }
     });
 
-    // Basic validation checks
-    if (!hasIngredients) {
-        return { error: "No ingredients found. Please add at least one ingredient." };
-    }
-    if (instructions.length === 0) {
-        return { error: "No instructions found. Please add instructions after 'Instructions:'." };
-    }
-
-    return { prepTime, cookTime, servings, ingredients, instructions };
+    return recipeNode;
 }
 
-module.exports = { parseRecipe };
+function parseTreeToJson(recipeNode) {
+    return {
+        prepTime: recipeNode.metadata.prepTime ? recipeNode.metadata.prepTime.value : null,
+        cookTime: recipeNode.metadata.cookTime ? recipeNode.metadata.cookTime.value : null,
+        servings: recipeNode.metadata.servings ? recipeNode.metadata.servings.value : null,
+        ingredients: recipeNode.ingredients.map(ingredient => ({
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            ingredient: ingredient.ingredient
+        })),
+        instructions: recipeNode.instructions.map(instruction => instruction.step)
+    };
+}
+
+
+module.exports = { parseRecipe, parseTreeToJson, RecipeNode, IngredientNode, InstructionNode, MetadataNode };
+

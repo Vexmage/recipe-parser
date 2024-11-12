@@ -1,7 +1,7 @@
 // src/app.js
 const express = require('express');
 const app = express();
-const { parseRecipe } = require('./parser');
+const { parseRecipe, parseTreeToJson } = require('./parser');
 const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
@@ -13,13 +13,9 @@ app.get('/', (req, res) => {
 
 app.post('/parse', (req, res) => {
     const { recipe } = req.body;
-    const parsedRecipe = parseRecipe(recipe);
-    
-    if (parsedRecipe.error) {
-        return res.status(400).json({ error: parsedRecipe.error });
-    }
-    
-    res.json(parsedRecipe);
+    const recipeNode = parseRecipe(recipe);
+    const parsedRecipeJson = parseTreeToJson(recipeNode);
+    res.json(parsedRecipeJson);
 });
 
 app.listen(PORT, () => {
